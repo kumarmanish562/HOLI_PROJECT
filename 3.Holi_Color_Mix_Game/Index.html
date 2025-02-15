@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holi Color Mixing Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+</head>
+<body>
+    <div class="particles-container" id="particles-js"></div>
+    <div class="game-container">
+        <header class="animate__animated animate__bounceInDown">
+            <h1>✨ Holi Color Mixing Game 🎨</h1>
+            <div class="game-stats">
+                <div class="score-container">
+                    <div class="score">Score: <span id="score">0</span></div>
+                    <div class="high-score">Best: <span id="high-score">0</span></div>
+                </div>
+                <div class="level">Level: <span id="level">1</span></div>
+                <div class="timer-container">
+                    <div class="timer">Time: <span id="timer">60</span>s</div>
+                    <div class="progress-bar">
+                        <div class="progress" id="time-progress"></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="game-area animate__animated animate__fadeIn">
+            <div class="color-palette">
+                <h2>Magic Colors</h2>
+                <div class="color-options">
+                    <div class="color shimmer" draggable="true" data-color="red" style="background-color: #FF0000;">
+                        <span class="color-name">Red</span>
+                    </div>
+                    <div class="color shimmer" draggable="true" data-color="blue" style="background-color: #0000FF;">
+                        <span class="color-name">Blue</span>
+                    </div>
+                    <div class="color shimmer" draggable="true" data-color="yellow" style="background-color: #FFFF00;">
+                        <span class="color-name">Yellow</span>
+                    </div>
+                </div>
+                <div class="power-ups">
+                    <button id="time-boost" class="power-up-btn" disabled>
+                        ⏰ Time Boost
+                        <span class="cooldown"></span>
+                    </button>
+                    <button id="score-multiplier" class="power-up-btn" disabled>
+                        2️⃣ Score 2x
+                        <span class="cooldown"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mixing-area">
+                <div class="target-container">
+                    <h2>Create This Color:</h2>
+                    <div class="target-display">
+                        <div id="target-color-display"></div>
+                        <span id="target-color-name" class="animate__animated animate__pulse">Purple</span>
+                    </div>
+                </div>
+                <div id="mixing-bowl" class="mixing-bowl">
+                    <div class="bowl-content">
+                        <p>Drop colors here to mix!</p>
+                        <div class="ripple-effect"></div>
+                    </div>
+                </div>
+                <button id="reset-mix" class="glow-button">Reset Mix</button>
+            </div>
+        </div>
+
+        <div class="controls animate__animated animate__fadeInUp">
+            <button id="start-game" class="rainbow-button">Start Game</button>
+            <button id="how-to-play" class="glow-button">How to Play</button>
+            <button id="toggle-music" class="glow-button">🎵 Music</button>
+        </div>
+
+        <div id="combo-display" class="combo-display hidden">
+            <span class="combo-text">Combo x<span id="combo-count">2</span>!</span>
+        </div>
+
+        <div id="game-over" class="modal hidden">
+            <div class="modal-content animate__animated animate__zoomIn">
+                <h2>Game Over!</h2>
+                <div class="stats-container">
+                    <div class="final-score">
+                        <h3>Final Score</h3>
+                        <span id="final-score">0</span>
+                    </div>
+                    <div class="achievements">
+                        <h3>Achievements</h3>
+                        <ul id="achievements-list"></ul>
+                    </div>
+                </div>
+                <button id="play-again" class="rainbow-button">Play Again</button>
+                <button id="share-score" class="glow-button">Share Score</button>
+            </div>
+        </div>
+
+        <div id="tutorial" class="modal hidden">
+            <div class="modal-content animate__animated animate__fadeIn">
+                <h2>How to Play</h2>
+                <div class="tutorial-steps">
+                    <!-- Tutorial content will be added by JavaScript -->
+                </div>
+                <button class="glow-button" id="tutorial-next">Next</button>
+                <button class="glow-button hidden" id="tutorial-close">Start Playing!</button>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
