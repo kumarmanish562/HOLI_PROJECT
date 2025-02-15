@@ -1,170 +1,352 @@
-// Game state
-let gameActive = false;
-let score = 0;
-let timeLeft = 60;
-let timer;
-let currentTarget;
-
-// Color combinations
-const colorMixes = {
-    'red,blue': 'purple',
-    'blue,red': 'purple',
-    'blue,yellow': 'green',
-    'yellow,blue': 'green',
-    'red,yellow': 'orange',
-    'yellow,red': 'orange'
+// Game configuration
+const config = {
+    gameDuration: 60,
+    baseScore: 10,
+    penaltyScore: 5,
+    comboThreshold: 2,
+    comboMultiplier: 2,
+    levels: {
+        1: { requiredScore: 0, timeLimit: 60 },
+        2: { requiredScore: 50, timeLimit: 55 },
+        3: { requiredScore: 100, timeLimit: 50 },
+        4: { requiredScore: 200, timeLimit: 45 },
+        5: { requiredScore: 300, timeLimit: 40 }
+    }
 };
 
-const targetColors = [
-    { name: 'Purple', rgb: '#800080', mix: ['red', 'blue'] },
-    { name: 'Green', rgb: '#008000', mix: ['blue', 'yellow'] },
-    { name: 'Orange', rgb: '#FFA500', mix: ['red', 'yellow'] }
-];
+// Game state
+let gameState = {
+    score: 0,
+    highScore: localStorage.getItem('holiGameHighScore') || 0,
+    level: 1,
+    timeLeft: config.gameDuration,
+    isActive: false,
+    comboCount: 0,
+    currentMix: [],
+    powerUps: {
+        timeBoost: { active: false, cooldown: false },
+        scoreMultiplier: { active: false, cooldown: false }
+    }
+};
+
+// Color combinations and their results
+const colorMixes = {
+    'red,blue': { name: 'Purple', rgb: '#800080' },
+    'blue,red': { name: 'Purple', rgb: '#800080' },
+    'blue,yellow': { name: 'Green', rgb: '#008000' },
+    'yellow,blue': { name: 'Green', rgb: '#008000' },
+    'red,yellow': { name: 'Orange', rgb: '#FFA500' },
+    'yellow,red': { name: 'Orange', rgb: '#FFA500' }
+};
 
 // DOM Elements
-const scoreElement = document.getElementById('score');
-const timerElement = document.getElementById('timer');
-const mixingBowl = document.getElementById('mixing-bowl');
-const startButton = document.getElementById('start-game');
-const resetMixButton = document.getElementById('reset-mix');
-const gameOverModal = document.getElementById('game-over');
-const finalScoreElement = document.getElementById('final-score');
-const playAgainButton = document.getElementById('play-again');
-const targetColorName = document.getElementById('target-color-name');
-const targetColorDisplay = document.getElementById('target-color-display');
+const elements = {
+    score: document.getElementById('score'),
+    highScore: document.getElementById('high-score'),
+    level: document.getElementById('level'),
+    timer: document.getElementById('timer'),
+    timeProgress: document.getElementById('time-progress'),
+    mixingBowl: document.getElementById('mixing-bowl'),
+    targetColorDisplay: document.getElementById('target-color-display'),
+    targetColorName: document.getElementById('target-color-name'),
+    startButton: document.getElementById('start-game'),
+    resetMixButton: document.getElementById('reset-mix'),
+    comboDisplay: document.getElementById('combo-display'),
+    comboCount: document.getElementById('combo-count'),
+    gameOverModal: document.getElementById('game-over'),
+    finalScore: document.getElementById('final-score'),
+    playAgainButton: document.getElementById('play-again'),
+    shareScoreButton: document.getElementById('share-score'),
+    timeBoostButton: document.getElementById('time-boost'),
+    scoreMultiplierButton: document.getElementById('score-multiplier'),
+    musicToggle: document.getElementById('toggle-music'),
+    tutorial: document.getElementById('tutorial')
+};
 
-// Current mixing state
-let currentMix = [];
+// Initialize particles.js
+particlesJS('particles-js', {
+    particles: {
+        number: { value: 80, density: { enable: true, value_area: 800 } },
+        color: { value: "#ffffff" },
+        shape: { type: "circle" },
+        opacity: { value: 0.5, random: true },
+        size: { value: 3, random: true },
+        move: {
+            enable: true,
+            speed: 3,
+            direction: "none",
+            random: true,
+            out_mode: "out"
+        }
+    }
+});
+
+// Sound effects
+const sounds = {
+    background: new Audio('path/to/background-music.mp3'),
+    correct: new Audio('path/to/correct.mp3'),
+    wrong: new Audio('path/to/wrong.mp3'),
+    combo: new Audio('path/to/combo.mp3'),
+    gameOver: new Audio('path/to/game-over.mp3')
+};
 
 // Game functions
 function startGame() {
-    gameActive = true;
-    score = 0;
-    timeLeft = 60;
-    updateScore();
+    gameState = {
+        ...gameState,
+        score: 0,
+        level: 1,
+        timeLeft: config.levels[1].timeLimit,
+        isActive: true,
+        comboCount: 0,
+        currentMix: []
+    };
+    
+    updateUI();
     setNewTarget();
     startTimer();
-    startButton.disabled = true;
-    gameOverModal.classList.add('hidden');
+    elements.startButton.disabled = true;
+    elements.gameOverModal.classList.add('hidden');
+    enablePowerUps();
 }
 
 function endGame() {
-    gameActive = false;
-    clearInterval(timer);
-    finalScoreElement.textContent = score;
-    gameOverModal.classList.remove('hidden');
-    startButton.disabled = false;
+    gameState.isActive = false;
+    sounds.gameOver.play();
+    
+    if (gameState.score > gameState.highScore) {
+        gameState.highScore = gameState.score;
+        localStorage.setItem('holiGameHighScore', gameState.score);
+    }
+    
+    elements.finalScore.textContent = gameState.score;
+    elements.gameOverModal.classList.remove('hidden');
+    elements.startButton.disabled = false;
 }
 
 function startTimer() {
-    timer = setInterval(() => {
-        timeLeft--;
-        timerElement.textContent = timeLeft;
-        if (timeLeft <= 0) {
+    const timerInterval = setInterval(() => {
+        if (!gameState.isActive) {
+            clearInterval(timerInterval);
+            return;
+        }
+
+        gameState.timeLeft--;
+        updateTimerUI();
+
+        if (gameState.timeLeft <= 0) {
+            clearInterval(timerInterval);
             endGame();
         }
     }, 1000);
 }
 
+function updateTimerUI() {
+    elements.timer.textContent = gameState.timeLeft;
+    elements.timeProgress.style.width = `${(gameState.timeLeft / config.levels[gameState.level].timeLimit) * 100}%`;
+}
+
 function setNewTarget() {
-    currentTarget = targetColors[Math.floor(Math.random() * targetColors.length)];
-    targetColorName.textContent = currentTarget.name;
-    targetColorDisplay.style.backgroundColor = currentTarget.rgb;
+    const targets = Object.values(colorMixes);
+    const randomTarget = targets[Math.floor(Math.random() * targets.length)];
+    elements.targetColorDisplay.style.backgroundColor = randomTarget.rgb;
+    elements.targetColorName.textContent = randomTarget.name;
 }
 
-function updateScore() {
-    scoreElement.textContent = score;
+// Drag and Drop handlers
+elements.mixingBowl.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    elements.mixingBowl.classList.add('active');
+});
+
+elements.mixingBowl.addEventListener('dragleave', () => {
+    elements.mixingBowl.classList.remove('active');
+});
+
+elements.mixingBowl.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (!gameState.isActive) return;
+
+    elements.mixingBowl.classList.remove('active');
+    const color = e.dataTransfer.getData('color');
+    handleColorDrop(color);
+});
+
+function handleColorDrop(color) {
+    if (gameState.currentMix.length >= 2) return;
+
+    gameState.currentMix.push(color);
+    createSplashEffect(elements.mixingBowl);
+    updateMixingBowlDisplay();
+
+    if (gameState.currentMix.length === 2) {
+        checkMixResult();
+    }
 }
 
-function createSplashEffect(x, y, color) {
+function checkMixResult() {
+    const mixKey = gameState.currentMix.join(',');
+    const targetColor = elements.targetColorName.textContent;
+    const mixed = colorMixes[mixKey];
+
+    if (mixed && mixed.name === targetColor) {
+        handleCorrectMix();
+    } else {
+        handleWrongMix();
+    }
+}
+
+function handleCorrectMix() {
+    sounds.correct.play();
+    gameState.comboCount++;
+    
+    let points = config.baseScore;
+    if (gameState.comboCount >= config.comboThreshold) {
+        points *= config.comboMultiplier;
+        showComboEffect();
+    }
+    
+    if (gameState.powerUps.scoreMultiplier.active) {
+        points *= 2;
+    }
+    
+    gameState.score += points;
+    checkLevelProgress();
+    updateUI();
+    
+    setTimeout(() => {
+        resetMix();
+        setNewTarget();
+    }, 1000);
+}
+
+function handleWrongMix() {
+    sounds.wrong.play();
+    gameState.score = Math.max(0, gameState.score - config.penaltyScore);
+    gameState.comboCount = 0;
+    updateUI();
+    
+    elements.mixingBowl.classList.add('shake');
+    setTimeout(() => {
+        elements.mixingBowl.classList.remove('shake');
+        resetMix();
+    }, 1000);
+}
+
+function checkLevelProgress() {
+    const nextLevel = gameState.level + 1;
+    if (config.levels[nextLevel] && gameState.score >= config.levels[nextLevel].requiredScore) {
+        gameState.level = nextLevel;
+        showLevelUpEffect();
+    }
+}
+
+// Visual effects
+function createSplashEffect(element) {
     const splash = document.createElement('div');
-    splash.className = 'splash';
-    splash.style.left = `${x}px`;
-    splash.style.top = `${y}px`;
-    splash.style.backgroundColor = color;
-    document.body.appendChild(splash);
-    setTimeout(() => splash.remove(), 500);
+    splash.className = 'ripple-effect';
+    element.appendChild(splash);
+    setTimeout(() => splash.remove(), 1000);
+}
+
+function showComboEffect() {
+    elements.comboCount.textContent = gameState.comboCount;
+    elements.comboDisplay.classList.remove('hidden');
+    setTimeout(() => {
+        elements.comboDisplay.classList.add('hidden');
+    }, 2000);
+}
+
+function showLevelUpEffect() {
+    const levelUp = document.createElement('div');
+    levelUp.className = 'level-up-effect';
+    levelUp.textContent = `Level ${gameState.level}!`;
+    document.body.appendChild(levelUp);
+    setTimeout(() => levelUp.remove(), 2000);
+}
+
+// Power-ups
+function enablePowerUps() {
+    elements.timeBoostButton.disabled = false;
+    elements.scoreMultiplierButton.disabled = false;
+}
+
+elements.timeBoostButton.addEventListener('click', () => {
+    if (!gameState.powerUps.timeBoost.cooldown) {
+        activateTimeBoost();
+    }
+});
+
+elements.scoreMultiplierButton.addEventListener('click', () => {
+    if (!gameState.powerUps.scoreMultiplier.cooldown) {
+        activateScoreMultiplier();
+    }
+});
+
+function activateTimeBoost() {
+    gameState.timeLeft += 10;
+    gameState.powerUps.timeBoost.cooldown = true;
+    elements.timeBoostButton.disabled = true;
+    updateTimerUI();
+    
+    setTimeout(() => {
+        gameState.powerUps.timeBoost.cooldown = false;
+        elements.timeBoostButton.disabled = false;
+    }, 30000);
+}
+
+function activateScoreMultiplier() {
+    gameState.powerUps.scoreMultiplier.active = true;
+    gameState.powerUps.scoreMultiplier.cooldown = true;
+    elements.scoreMultiplierButton.disabled = true;
+    
+    setTimeout(() => {
+        gameState.powerUps.scoreMultiplier.active = false;
+    }, 10000);
+    
+    setTimeout(() => {
+        gameState.powerUps.scoreMultiplier.cooldown = false;
+        elements.scoreMultiplierButton.disabled = false;
+    }, 30000);
+}
+
+// UI Updates
+function updateUI() {
+    elements.score.textContent = gameState.score;
+    elements.highScore.textContent = gameState.highScore;
+    elements.level.textContent = gameState.level;
+}
+
+function resetMix() {
+    gameState.currentMix = [];
+    elements.mixingBowl.style.backgroundColor = '#ffffff';
+    elements.mixingBowl.innerHTML = '<div class="bowl-content"><p>Drop colors here to mix!</p></div>';
 }
 
 // Event Listeners
-startButton.addEventListener('click', startGame);
-playAgainButton.addEventListener('click', startGame);
-
-resetMixButton.addEventListener('click', () => {
-    currentMix = [];
-    mixingBowl.style.backgroundColor = '#ffffff';
-    mixingBowl.innerHTML = '<p>Drop colors here to mix!</p>';
+elements.startButton.addEventListener('click', startGame);
+elements.playAgainButton.addEventListener('click', startGame);
+elements.resetMixButton.addEventListener('click', resetMix);
+elements.shareScoreButton.addEventListener('click', () => {
+    // Implement share functionality
 });
 
-// Drag and Drop functionality
-const colors = document.querySelectorAll('.color');
+elements.musicToggle.addEventListener('click', () => {
+    if (sounds.background.paused) {
+        sounds.background.play();
+        sounds.background.loop = true;
+    } else {
+        sounds.background.pause();
+    }
+});
 
-colors.forEach(color => {
+// Initialize drag events for colors
+document.querySelectorAll('.color').forEach(color => {
     color.addEventListener('dragstart', (e) => {
-        if (!gameActive) return;
         e.dataTransfer.setData('color', color.dataset.color);
     });
 });
 
-mixingBowl.addEventListener('dragover', (e) => {
-    if (!gameActive) return;
-    e.preventDefault();
-    mixingBowl.classList.add('active');
-});
-
-mixingBowl.addEventListener('dragleave', () => {
-    mixingBowl.classList.add('active');
-});
-
-mixingBowl.addEventListener('drop', (e) => {
-    if (!gameActive) return;
-    e.preventDefault();
-    mixingBowl.classList.remove('active');
-
-    const color = e.dataTransfer.getData('color');
-    if (currentMix.length >= 2) return;
-
-    currentMix.push(color);
-    createSplashEffect(e.clientX, e.clientY, color);
-
-    if (currentMix.length === 2) {
-        const mixResult = colorMixes[currentMix.join(',')];
-        if (mixResult === currentTarget.name.toLowerCase()) {
-            // Correct mix
-            score += 10;
-            updateScore();
-            mixingBowl.style.backgroundColor = currentTarget.rgb;
-            setTimeout(() => {
-                currentMix = [];
-                mixingBowl.style.backgroundColor = '#ffffff';
-                mixingBowl.innerHTML = '<p>Drop colors here to mix!</p>';
-                setNewTarget();
-            }, 1000);
-        } else {
-            // Wrong mix
-            score = Math.max(0, score - 5);
-            updateScore();
-            mixingBowl.style.backgroundColor = '#ff0000';
-            setTimeout(() => {
-                currentMix = [];
-                mixingBowl.style.backgroundColor = '#ffffff';
-                mixingBowl.innerHTML = '<p>Drop colors here to mix!</p>';
-            }, 1000);
-        }
-    } else {
-        mixingBowl.style.backgroundColor = color;
-    }
-});
-
-// How to play modal
-const howToPlayButton = document.getElementById('how-to-play');
-howToPlayButton.addEventListener('click', () => {
-    alert(`
-        How to Play:
-        1. Drag and drop colors into the mixing bowl
-        2. Mix two colors to match the target color
-        3. Correct mix = +10 points
-        4. Wrong mix = -5 points
-        5. Complete as many matches as you can in 60 seconds!
-    `);
-});
+// Initialize the game
+updateUI();
+showTutorial();
