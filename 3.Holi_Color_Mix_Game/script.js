@@ -5,6 +5,8 @@ const config = {
     penaltyScore: 5,
     comboThreshold: 2,
     comboMultiplier: 2,
+    powerUpDuration: 10000,
+    powerUpCooldown: 30000,
     levels: {
         1: { requiredScore: 0, timeLimit: 60 },
         2: { requiredScore: 50, timeLimit: 55 },
@@ -14,10 +16,20 @@ const config = {
     }
 };
 
+// Color combinations
+const colorMixes = {
+    'red,blue': { name: 'Purple', rgb: '#800080' },
+    'blue,red': { name: 'Purple', rgb: '#800080' },
+    'blue,yellow': { name: 'Green', rgb: '#008000' },
+    'yellow,blue': { name: 'Green', rgb: '#008000' },
+    'red,yellow': { name: 'Orange', rgb: '#FFA500' },
+    'yellow,red': { name: 'Orange', rgb: '#FFA500' }
+};
+
 // Game state
 let gameState = {
     score: 0,
-    highScore: localStorage.getItem('holiGameHighScore') || 0,
+    highScore: parseInt(localStorage.getItem('holiGameHighScore')) || 0,
     level: 1,
     timeLeft: config.gameDuration,
     isActive: false,
@@ -29,17 +41,7 @@ let gameState = {
     }
 };
 
-// Color combinations and their results
-const colorMixes = {
-    'red,blue': { name: 'Purple', rgb: '#800080' },
-    'blue,red': { name: 'Purple', rgb: '#800080' },
-    'blue,yellow': { name: 'Green', rgb: '#008000' },
-    'yellow,blue': { name: 'Green', rgb: '#008000' },
-    'red,yellow': { name: 'Orange', rgb: '#FFA500' },
-    'yellow,red': { name: 'Orange', rgb: '#FFA500' }
-};
-
-// DOM Elements
+// Cache DOM elements
 const elements = {
     score: document.getElementById('score'),
     highScore: document.getElementById('high-score'),
@@ -63,43 +65,54 @@ const elements = {
     tutorial: document.getElementById('tutorial')
 };
 
-// Initialize particles.js
-particlesJS('particles-js', {
-    particles: {
-        number: { value: 80, density: { enable: true, value_area: 800 } },
-        color: { value: "#ffffff" },
-        shape: { type: "circle" },
-        opacity: { value: 0.5, random: true },
-        size: { value: 3, random: true },
-        move: {
-            enable: true,
-            speed: 3,
-            direction: "none",
-            random: true,
-            out_mode: "out"
+// Sound manager
+class SoundManager {
+    constructor() {
+        this.sounds = {
+            background: new Audio('path/to/background-music.mp3'),
+            correct: new Audio('path/to/correct.mp3'),
+            wrong: new Audio('path/to/wrong.mp3'),
+            combo: new Audio('path/to/combo.mp3'),
+            gameOver: new Audio('path/to/game-over.mp3')
+        };
+        this.isMuted = false;
+        
+        // Set up background music
+        this.sounds.background.loop = true;
+    }
+
+    play(soundName) {
+        if (!this.isMuted && this.sounds[soundName]) {
+            this.sounds[soundName].currentTime = 0;
+            this.sounds[soundName].play().catch(() => {});
         }
     }
-});
 
-// Sound effects
-const sounds = {
-    background: new Audio('path/to/background-music.mp3'),
-    correct: new Audio('path/to/correct.mp3'),
-    wrong: new Audio('path/to/wrong.mp3'),
-    combo: new Audio('path/to/combo.mp3'),
-    gameOver: new Audio('path/to/game-over.mp3')
-};
+    toggleMute() {
+        this.isMuted = !this.isMuted;
+        Object.values(this.sounds).forEach(sound => {
+            sound.muted = this.isMuted;
+        });
+        elements.musicToggle.textContent = this.isMuted ? '🔇' : '🔊';
+    }
+}
+
+const soundManager = new SoundManager();
 
 // Game functions
 function startGame() {
     gameState = {
-        ...gameState,
         score: 0,
+        highScore: gameState.highScore,
         level: 1,
         timeLeft: config.levels[1].timeLimit,
         isActive: true,
         comboCount: 0,
-        currentMix: []
+        currentMix: [],
+        powerUps: {
+            timeBoost: { active: false, cooldown: false },
+            scoreMultiplier: { active: false, cooldown: false }
+        }
     };
     
     updateUI();
@@ -108,26 +121,30 @@ function startGame() {
     elements.startButton.disabled = true;
     elements.gameOverModal.classList.add('hidden');
     enablePowerUps();
+    soundManager.play('background');
 }
 
 function endGame() {
     gameState.isActive = false;
-    sounds.gameOver.play();
+    soundManager.play('gameOver');
     
     if (gameState.score > gameState.highScore) {
         gameState.highScore = gameState.score;
-        localStorage.setItem('holiGameHighScore', gameState.score);
+        localStorage.setItem('holiGameHighScore', gameState.score.toString());
     }
     
     elements.finalScore.textContent = gameState.score;
     elements.gameOverModal.classList.remove('hidden');
     elements.startButton.disabled = false;
+    soundManager.sounds.background.pause();
 }
 
+let gameTimer;
 function startTimer() {
-    const timerInterval = setInterval(() => {
+    clearInterval(gameTimer);
+    gameTimer = setInterval(() => {
         if (!gameState.isActive) {
-            clearInterval(timerInterval);
+            clearInterval(gameTimer);
             return;
         }
 
@@ -135,7 +152,7 @@ function startTimer() {
         updateTimerUI();
 
         if (gameState.timeLeft <= 0) {
-            clearInterval(timerInterval);
+            clearInterval(gameTimer);
             endGame();
         }
     }, 1000);
@@ -143,7 +160,8 @@ function startTimer() {
 
 function updateTimerUI() {
     elements.timer.textContent = gameState.timeLeft;
-    elements.timeProgress.style.width = `${(gameState.timeLeft / config.levels[gameState.level].timeLimit) * 100}%`;
+    const progressPercentage = (gameState.timeLeft / config.levels[gameState.level].timeLimit) * 100;
+    elements.timeProgress.style.width = `${Math.max(0, Math.min(100, progressPercentage))}%`;
 }
 
 function setNewTarget() {
@@ -153,27 +171,8 @@ function setNewTarget() {
     elements.targetColorName.textContent = randomTarget.name;
 }
 
-// Drag and Drop handlers
-elements.mixingBowl.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    elements.mixingBowl.classList.add('active');
-});
-
-elements.mixingBowl.addEventListener('dragleave', () => {
-    elements.mixingBowl.classList.remove('active');
-});
-
-elements.mixingBowl.addEventListener('drop', (e) => {
-    e.preventDefault();
-    if (!gameState.isActive) return;
-
-    elements.mixingBowl.classList.remove('active');
-    const color = e.dataTransfer.getData('color');
-    handleColorDrop(color);
-});
-
 function handleColorDrop(color) {
-    if (gameState.currentMix.length >= 2) return;
+    if (!gameState.isActive || gameState.currentMix.length >= 2) return;
 
     gameState.currentMix.push(color);
     createSplashEffect(elements.mixingBowl);
@@ -182,6 +181,16 @@ function handleColorDrop(color) {
     if (gameState.currentMix.length === 2) {
         checkMixResult();
     }
+}
+
+function updateMixingBowlDisplay() {
+    const mixed = gameState.currentMix.length === 2 ? 
+        colorMixes[gameState.currentMix.join(',')] : null;
+
+    elements.mixingBowl.style.backgroundColor = mixed ? mixed.rgb : '#ffffff';
+    elements.mixingBowl.innerHTML = `<div class="bowl-content">
+        <p>${mixed ? mixed.name : 'Drop colors here to mix!'}</p>
+    </div>`;
 }
 
 function checkMixResult() {
@@ -197,13 +206,14 @@ function checkMixResult() {
 }
 
 function handleCorrectMix() {
-    sounds.correct.play();
+    soundManager.play('correct');
     gameState.comboCount++;
     
     let points = config.baseScore;
     if (gameState.comboCount >= config.comboThreshold) {
         points *= config.comboMultiplier;
         showComboEffect();
+        soundManager.play('combo');
     }
     
     if (gameState.powerUps.scoreMultiplier.active) {
@@ -221,7 +231,7 @@ function handleCorrectMix() {
 }
 
 function handleWrongMix() {
-    sounds.wrong.play();
+    soundManager.play('wrong');
     gameState.score = Math.max(0, gameState.score - config.penaltyScore);
     gameState.comboCount = 0;
     updateUI();
@@ -252,9 +262,7 @@ function createSplashEffect(element) {
 function showComboEffect() {
     elements.comboCount.textContent = gameState.comboCount;
     elements.comboDisplay.classList.remove('hidden');
-    setTimeout(() => {
-        elements.comboDisplay.classList.add('hidden');
-    }, 2000);
+    setTimeout(() => elements.comboDisplay.classList.add('hidden'), 2000);
 }
 
 function showLevelUpEffect() {
@@ -271,19 +279,9 @@ function enablePowerUps() {
     elements.scoreMultiplierButton.disabled = false;
 }
 
-elements.timeBoostButton.addEventListener('click', () => {
-    if (!gameState.powerUps.timeBoost.cooldown) {
-        activateTimeBoost();
-    }
-});
-
-elements.scoreMultiplierButton.addEventListener('click', () => {
-    if (!gameState.powerUps.scoreMultiplier.cooldown) {
-        activateScoreMultiplier();
-    }
-});
-
 function activateTimeBoost() {
+    if (gameState.powerUps.timeBoost.cooldown) return;
+    
     gameState.timeLeft += 10;
     gameState.powerUps.timeBoost.cooldown = true;
     elements.timeBoostButton.disabled = true;
@@ -292,22 +290,24 @@ function activateTimeBoost() {
     setTimeout(() => {
         gameState.powerUps.timeBoost.cooldown = false;
         elements.timeBoostButton.disabled = false;
-    }, 30000);
+    }, config.powerUpCooldown);
 }
 
 function activateScoreMultiplier() {
+    if (gameState.powerUps.scoreMultiplier.cooldown) return;
+    
     gameState.powerUps.scoreMultiplier.active = true;
     gameState.powerUps.scoreMultiplier.cooldown = true;
     elements.scoreMultiplierButton.disabled = true;
     
     setTimeout(() => {
         gameState.powerUps.scoreMultiplier.active = false;
-    }, 10000);
+    }, config.powerUpDuration);
     
     setTimeout(() => {
         gameState.powerUps.scoreMultiplier.cooldown = false;
         elements.scoreMultiplierButton.disabled = false;
-    }, 30000);
+    }, config.powerUpCooldown);
 }
 
 // UI Updates
@@ -319,34 +319,93 @@ function updateUI() {
 
 function resetMix() {
     gameState.currentMix = [];
-    elements.mixingBowl.style.backgroundColor = '#ffffff';
-    elements.mixingBowl.innerHTML = '<div class="bowl-content"><p>Drop colors here to mix!</p></div>';
+    updateMixingBowlDisplay();
 }
 
-// Event Listeners
-elements.startButton.addEventListener('click', startGame);
-elements.playAgainButton.addEventListener('click', startGame);
-elements.resetMixButton.addEventListener('click', resetMix);
-elements.shareScoreButton.addEventListener('click', () => {
-    // Implement share functionality
-});
-
-elements.musicToggle.addEventListener('click', () => {
-    if (sounds.background.paused) {
-        sounds.background.play();
-        sounds.background.loop = true;
-    } else {
-        sounds.background.pause();
+async function shareScore() {
+    const text = `I scored ${gameState.score} points in the Color Mixing Game!`;
+    
+    try {
+        if (navigator.share) {
+            await navigator.share({
+                title: 'Color Mixing Game Score',
+                text: text,
+                url: window.location.href
+            });
+        } else {
+            await navigator.clipboard.writeText(text);
+            alert('Score copied to clipboard!');
+        }
+    } catch (error) {
+        console.error('Error sharing score:', error);
     }
-});
+}
 
-// Initialize drag events for colors
-document.querySelectorAll('.color').forEach(color => {
-    color.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('color', color.dataset.color);
+// Initialize game
+function initializeGame() {
+    // Initialize drag and drop
+    elements.mixingBowl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        elements.mixingBowl.classList.add('active');
     });
-});
 
-// Initialize the game
-updateUI();
-showTutorial();
+    elements.mixingBowl.addEventListener('dragleave', () => {
+        elements.mixingBowl.classList.remove('active');
+    });
+
+    elements.mixingBowl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (!gameState.isActive) return;
+        
+        elements.mixingBowl.classList.remove('active');
+        const color = e.dataTransfer.getData('color');
+        if (color) {
+            handleColorDrop(color);
+        }
+    });
+
+    // Initialize color dragging
+    document.querySelectorAll('.color').forEach(color => {
+        color.addEventListener('dragstart', (e) => {
+            if (gameState.isActive) {
+                e.dataTransfer.setData('color', color.dataset.color);
+            }
+        });
+    });
+
+    // Initialize buttons
+    elements.startButton.addEventListener('click', startGame);
+    elements.playAgainButton.addEventListener('click', startGame);
+    elements.resetMixButton.addEventListener('click', resetMix);
+    elements.shareScoreButton.addEventListener('click', shareScore);
+    elements.musicToggle.addEventListener('click', () => soundManager.toggleMute());
+    elements.timeBoostButton.addEventListener('click', activateTimeBoost);
+    elements.scoreMultiplierButton.addEventListener('click', activateScoreMultiplier);
+
+    // Initialize particles.js
+    particlesJS('particles-js', {
+        particles: {
+            number: { value: 80, density: { enable: true, value_area: 800 } },
+            color: { value: "#ffffff" },
+            shape: { type: "circle" },
+            opacity: { value: 0.5, random: true },
+            size: { value: 3, random: true },
+            move: {
+                enable: true,
+                speed: 3,
+                direction: "none",
+                random: true,
+                out_mode: "out"
+            }
+        }
+    });
+
+    // Show tutorial on first visit
+    if (!localStorage.getItem('tutorialShown')) {
+        elements.tutorial.classList.remove('hidden');
+        localStorage.setItem('tutorialShown', 'true');
+    }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', initializeGame);
