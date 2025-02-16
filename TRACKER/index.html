@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Timer Tracker</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-tasks"></i>
+                <span>TaskTimer</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="#"><i class="fas fa-calendar"></i> Calendar</a>
+                <a href="#"><i class="fas fa-chart-bar"></i> Analytics</a>
+                <a href="#"><i class="fas fa-cog"></i> Settings</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search tasks...">
+                </div>
+                <div class="user-menu">
+                    <button class="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <div class="user-profile">
+                        <img src="/api/placeholder/32/32" alt="User" class="avatar">
+                        <span>John Doe</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard">
+                <section class="tasks-overview">
+                    <div class="section-header">
+                        <h2>Today's Tasks</h2>
+                        <button class="add-task-btn">
+                            <i class="fas fa-plus"></i> Add Task
+                        </button>
+                    </div>
+                    <div class="task-grid">
+                        <!-- Task cards will be dynamically added here -->
+                    </div>
+                </section>
+
+                <section class="time-tracking">
+                    <h2>Time Tracking</h2>
+                    <div class="timer-container">
+                        <div class="current-timer">
+                            <div class="timer-display">00:00:00</div>
+                            <div class="timer-controls">
+                                <button class="timer-btn start">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                                <button class="timer-btn pause">
+                                    <i class="fas fa-pause"></i>
+                                </button>
+                                <button class="timer-btn reset">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="time-distribution">
+                        <h3>Time Distribution</h3>
+                        <div class="distribution-chart">
+                            <!-- Chart will be rendered here -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Add Task Modal -->
+            <div class="modal" id="addTaskModal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Add New Task</h3>
+                        <button class="close-modal">&times;</button>
+                    </div>
+                    <form id="addTaskForm">
+                        <div class="form-group">
+                            <label for="taskName">Task Name</label>
+                            <input type="text" id="taskName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskDuration">Expected Duration (minutes)</label>
+                            <input type="number" id="taskDuration" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="taskPriority">Priority</label>
+                            <select id="taskPriority">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Add Task</button>
+                            <button type="button" class="btn-secondary close-modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script src="script.js"></script>
+
+</body>
+</html>
