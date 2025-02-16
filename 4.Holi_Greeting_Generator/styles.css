@@ -1,156 +1,202 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
+
 :root {
-  --primary: #FF3366;
-  --secondary: #6C63FF;
-  --accent: #4CAF50;
-  --background: #f8f9fa;
+    --primary-color: #ff6b6b;
+    --secondary-color: #4ecdc4;
+    --accent-color: #ffe66d;
+    --dark-color: #2c3e50;
+    --light-color: #f7f7f7;
 }
 
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  min-height: 100vh;
-  padding: 2rem;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    min-height: 100vh;
+    padding: 20px;
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 
 .header {
-  text-align: center;
-  margin-bottom: 2rem;
-  animation: fadeIn 1s ease-in;
+    text-align: center;
+    padding: 30px;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
 }
 
 .header h1 {
-  color: var(--primary);
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-.header p {
-  color: #666;
-  font-size: 1.1rem;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .editor-container {
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 20px;
+    padding: 20px;
 }
 
 .canvas-container {
-  flex: 1;
-  min-width: 300px;
-  background: white;
-  padding: 1rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    min-height: 600px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .tools-container {
-  width: 300px;
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    padding: 20px;
+    background: var(--light-color);
+    border-radius: 10px;
 }
 
 .tool-section {
-  margin-bottom: 1.5rem;
+    margin-bottom: 25px;
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
 }
 
 .tool-section h3 {
-  color: var(--secondary);
-  margin-bottom: 1rem;
+    color: var(--dark-color);
+    margin-bottom: 15px;
+    font-size: 1.2em;
 }
 
-.btn {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: transform 0.2s, background 0.2s;
-  width: 100%;
-  margin-bottom: 0.5rem;
+.template-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
 }
 
-.btn:hover {
-  transform: translateY(-2px);
-  background: #ff1f59;
+.template-btn {
+    padding: 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: transform 0.2s;
 }
 
-.btn.secondary {
-  background: var(--secondary);
+.template-btn:hover {
+    transform: scale(1.05);
 }
+
+.template1 { background: linear-gradient(45deg, #ff6b6b, #ffe66d); }
+.template2 { background: linear-gradient(45deg, #4ecdc4, #a8e6cf); }
+.template3 { background: linear-gradient(45deg, #a8e6cf, #ff8b94); }
+.template4 { background: linear-gradient(45deg, #ffe66d, #ff8b94); }
 
 .text-input {
-  width: 100%;
-  padding: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  margin-bottom: 0.5rem;
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
 }
 
 .text-controls {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
 }
 
-.text-controls input,
-.text-controls select {
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+.text-controls select, .text-controls input {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
 }
 
 .sticker-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
 }
 
-.sticker-grid img {
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: transform 0.2s;
+.sticker {
+    font-size: 2em;
+    padding: 10px;
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
 }
 
-.sticker-grid img:hover {
-  transform: scale(1.1);
+.sticker:hover {
+    transform: scale(1.1);
 }
 
-@keyframes fadeIn {
-  from {
-      opacity: 0;
-      transform: translateY(-20px);
-  }
-  to {
-      opacity: 1;
-      transform: translateY(0);
-  }
+.drawing-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
-@media (max-width: 768px) {
-  .editor-container {
-      flex-direction: column;
-  }
-  
-  .tools-container {
-      width: 100%;
-  }
+.btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.gradient-btn {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+}
+
+.primary-btn {
+    background: var(--primary-color);
+    color: white;
+}
+
+.success-btn {
+    background: #4ecdc4;
+    color: white;
+}
+
+.share-btn {
+    background: #6c5ce7;
+    color: white;
+}
+
+.danger-btn {
+    background: #ff8b94;
+    color: white;
+}
+
+.effect-btn {
+    background: linear-gradient(45deg, #a8e6cf, #ff8b94);
+    color: white;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
