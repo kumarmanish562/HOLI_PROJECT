@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holi Festival Celebrations</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            background: #1a1a1a;
+        }
+
+        .background-container {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+        }
+
+        .background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .background.active {
+            opacity: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding-top: 20vh;
+            color: white;
+        }
+
+        .main-title {
+            font-size: 5rem;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .quote {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn.active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Background Specific Styles */
+        .mandala-container {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, #ff4e50, #f9d423);
+        }
+
+        .rangoli-container {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        }
+
+        .powder-container {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #a8e6cf, #dcedc1);
+        }
+
+        .kaleidoscope-container {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #3494e6, #ec6ead);
+        }
+
+        #particleCanvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container">
+        <div class="background bg1 active">
+            <div class="mandala-container"></div>
+        </div>
+        <div class="background bg2">
+            <div class="rangoli-container"></div>
+        </div>
+        <div class="background bg3">
+            <canvas id="particleCanvas"></canvas>
+        </div>
+        <div class="background bg4">
+            <div class="powder-container"></div>
+        </div>
+        <div class="background bg5">
+            <div class="kaleidoscope-container"></div>
+        </div>
+    </div>
+
+    <div class="content">
+        <h1 class="main-title">Happy Holi</h1>
+        <p class="quote">May your life be as colorful as the colors of Holi</p>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn active" data-bg="1">Mandala</button>
+        <button class="nav-btn" data-bg="2">Rangoli</button>
+        <button class="nav-btn" data-bg="3">Particles</button>
+        <button class="nav-btn" data-bg="4">Powder</button>
+        <button class="nav-btn" data-bg="5">Kaleidoscope</button>
+    </div>
+
+    <script>
+        // GSAP Animations
+        gsap.from(".main-title", {
+            duration: 1.5,
+            y: -100,
+            opacity: 0,
+            ease: "bounce.out"
+        });
+
+        gsap.from(".quote", {
+            duration: 1.5,
+            y: 50,
+            opacity: 0,
+            ease: "power3.out",
+            delay: 0.5
+        });
+
+        // Holi wishes array
+        const wishes = [
+            "May your life be as colorful as the colors of Holi",
+            "Let's celebrate the victory of good over evil",
+            "Wishing you a Holi filled with sweet moments",
+            "May this festival of colors fill your life with happiness",
+            "Bringing the colors of joy to your life"
+        ];
+
+        // Change wishes periodically
+        let currentWishIndex = 0;
+        const quoteElement = document.querySelector('.quote');
+
+        function updateWish() {
+            gsap.to(quoteElement, {
+                duration: 0.5,
+                opacity: 0,
+                y: -20,
+                onComplete: () => {
+                    quoteElement.textContent = wishes[currentWishIndex];
+                    gsap.to(quoteElement, {
+                        duration: 0.5,
+                        opacity: 1,
+                        y: 0
+                    });
+                    currentWishIndex = (currentWishIndex + 1) % wishes.length;
+                }
+            });
+        }
+
+        setInterval(updateWish, 5000);
+
+        // Background Switching
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const backgrounds = document.querySelectorAll('.background');
+
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const bgNumber = btn.getAttribute('data-bg');
+                
+                // Update active states
+                navBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                backgrounds.forEach(bg => bg.classList.remove('active'));
+                document.querySelector(`.bg${bgNumber}`).classList.add('active');
+            });
+        });
+
+        // Particle System
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 5 + 2;
+                this.speedX = Math.random() * 3 - 1.5;
+                this.speedY = Math.random() * 3 - 1.5;
+                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x < 0 || this.x > canvas.width || 
+                    this.y < 0 || this.y > canvas.height) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Create particles
+        for (let i = 0; i < 100; i++) {
+            particles.push(new Particle());
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

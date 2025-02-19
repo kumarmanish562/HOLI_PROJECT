@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holi Festival Celebrations</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            overflow-x: hidden;
+            background: #1a1a1a;
+        }
+
+        .background-container {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+        }
+
+        .background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .background.active {
+            opacity: 1;
+        }
+
+        /* Background 1: Color Explosion */
+        .bg1 {
+            background: linear-gradient(45deg, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        /* Background 2: Spiral Pattern */
+        .bg2 {
+            background: conic-gradient(from 0deg at 50% 50%,
+                #FF0000, #FF7F00, #FFFF00, #00FF00,
+                #0000FF, #4B0082, #8B00FF, #FF0000);
+            animation: rotate 20s linear infinite;
+        }
+
+        /* Background 3: Bubbles */
+        .bg3 {
+            background: radial-gradient(circle at 30% 40%, 
+                #FF69B4, #FF1493, #FF00FF, #9400D3);
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        /* Background 4: Waves */
+        .bg4 {
+            background: linear-gradient(-45deg, #FF6B6B, #4ECDC4, #45B7D1, #96E6A1);
+            background-size: 400% 400%;
+            animation: wave 12s ease infinite;
+        }
+
+        /* Background 5: Kaleidoscope */
+        .bg5 {
+            background: repeating-radial-gradient(
+                circle at center,
+                #FF0000, #FF7F00, #FFFF00, #00FF00,
+                #0000FF 30%
+            );
+            animation: kaleidoscope 15s linear infinite;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes wave {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes kaleidoscope {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.5) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding-top: 20vh;
+            color: white;
+        }
+
+        .main-title {
+            font-size: 5rem;
+            margin-bottom: 2rem;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-3px);
+        }
+
+        .nav-btn.active {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .download-panel {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            z-index: 30;
+        }
+
+        .download-btn {
+            display: block;
+            padding: 10px 20px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .download-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateX(-5px);
+        }
+
+        .download-title {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-container">
+        <div class="background bg1 active"></div>
+        <div class="background bg2"></div>
+        <div class="background bg3"></div>
+        <div class="background bg4"></div>
+        <div class="background bg5"></div>
+    </div>
+
+    <div class="content">
+        <h1 class="main-title">Happy Holi</h1>
+    </div>
+
+    <div class="download-panel">
+        <h3 class="download-title">Download Backgrounds</h3>
+        <a href="/api/placeholder/400/300" download="color-explosion.gif" class="download-btn">Color Explosion</a>
+        <a href="/api/placeholder/400/300" download="spiral-pattern.gif" class="download-btn">Spiral Pattern</a>
+        <a href="/api/placeholder/400/300" download="bubble-burst.gif" class="download-btn">Bubble Burst</a>
+        <a href="/api/placeholder/400/300" download="color-waves.gif" class="download-btn">Color Waves</a>
+        <a href="/api/placeholder/400/300" download="kaleidoscope.gif" class="download-btn">Kaleidoscope</a>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn active" data-bg="1">Color Explosion</button>
+        <button class="nav-btn" data-bg="2">Spiral Pattern</button>
+        <button class="nav-btn" data-bg="3">Bubble Burst</button>
+        <button class="nav-btn" data-bg="4">Color Waves</button>
+        <button class="nav-btn" data-bg="5">Kaleidoscope</button>
+    </div>
+
+    <script>
+        // Register GSAP
+        gsap.registerPlugin();
+
+        // Initial animations
+        gsap.from(".main-title", {
+            duration: 2,
+            scale: 0,
+            rotation: 720,
+            opacity: 0,
+            ease: "elastic.out(1, 0.3)"
+        });
+
+        gsap.from(".download-panel", {
+            duration: 1,
+            x: 200,
+            opacity: 0,
+            ease: "back.out(1.7)",
+            delay: 0.5
+        });
+
+        // Background switching
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const backgrounds = document.querySelectorAll('.background');
+
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const bgNumber = btn.getAttribute('data-bg');
+                
+                navBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                gsap.to(backgrounds, {
+                    duration: 0.5,
+                    opacity: 0,
+                    ease: "power2.inOut"
+                });
+                
+                gsap.to(`.bg${bgNumber}`, {
+                    duration: 0.5,
+                    opacity: 1,
+                    ease: "power2.inOut"
+                });
+            });
+        });
+
+        // Download button hover animations
+        document.querySelectorAll('.download-btn').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                gsap.to(btn, {
+                    duration: 0.3,
+                    backgroundColor: 'rgba(255,255,255,0.4)',
+                    x: -5,
+                    ease: "power2.out"
+                });
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                gsap.to(btn, {
+                    duration: 0.3,
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    x: 0,
+                    ease: "power2.in"
+                });
+            });
+        });
+    </script>
+</body>
+</html>

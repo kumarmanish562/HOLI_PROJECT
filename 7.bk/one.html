@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Previous head and style sections remain the same -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holi Festival Celebrations</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <!-- Include GSAP plugins -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
+    
+    <!-- Previous styles remain the same -->
+    <style>
+        /* Previous styles remain unchanged */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        .background-container {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+        }
+
+        .background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .background.active {
+            opacity: 1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding-top: 15vh;
+            color: white;
+        }
+
+        .main-title {
+            font-size: 8rem;
+            margin-bottom: 2rem;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(45deg, #FF0000, #FF7F00, #FFFF00, #00FF00, #0000FF, #4B0082, #8B00FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: rainbow 5s linear infinite;
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        .quote {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            display: inline-block;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-btn.active {
+            background: rgba(255, 255, 255, 0.5);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Enhanced Background Styles */
+        .mandala-container {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, 
+                #ff0000, #ff4500, #ff8c00, #ffd700, 
+                #ff1493, #ff69b4, #ff00ff);
+            animation: rotateBg 20s linear infinite;
+        }
+
+        .rangoli-container {
+            width: 100%;
+            height: 100%;
+            background: conic-gradient(from 0deg,
+                #ff0000, #ff4500, #ff8c00, #ffd700,
+                #ff1493, #ff69b4, #ff00ff, #ff0000);
+            animation: spinBg 15s linear infinite;
+        }
+
+        .powder-container {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg,
+                #ff6b6b, #4ecdc4, #a8e6cf, #dcedc1,
+                #ff9a9e, #fad0c4, #ffd1ff);
+            background-size: 400% 400%;
+            animation: gradientBg 15s ease infinite;
+        }
+
+        .kaleidoscope-container {
+            width: 100%;
+            height: 100%;
+            background: repeating-radial-gradient(
+                circle at center,
+                #3494e6, #ec6ead, #ff0000, #ff4500,
+                #ff8c00 100%
+            );
+            animation: kaleidoscope 20s linear infinite;
+        }
+
+        @keyframes rotateBg {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spinBg {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes gradientBg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes kaleidoscope {
+            0% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.5) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+
+        /* Color Burst Effect */
+        .color-burst {
+            position: absolute;
+            pointer-events: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: burst 1s ease-out forwards;
+        }
+
+        @keyframes burst {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(20);
+                opacity: 0;
+            }
+        }
+
+        #particleCanvas {
+            width: 100%;
+            height: 100%;
+        }
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .float-item {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+
+        .color-splash {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        .letter-container {
+            position: absolute;
+            font-size: 120px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+        }
+
+        .festival-icon {
+            position: absolute;
+            font-size: 40px;
+            opacity: 0;
+        }
+
+        .splash-text {
+            position: absolute;
+            font-size: 24px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            opacity: 0;
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Previous body content remains the same -->
+    <div class="floating-elements"></div>
+    <div class="festival-elements"></div>
+
+    <script>
+        // Register GSAP plugins
+        gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
+        // Initialize GSAP timeline
+        const mainTimeline = gsap.timeline();
+
+        // Animated title entrance
+        mainTimeline.from(".main-title", {
+            duration: 2,
+            scale: 0,
+            rotation: 720,
+            opacity: 0,
+            ease: "elastic.out(1, 0.3)",
+            onComplete: () => createFloatingElements()
+        })
+        .from(".quote", {
+            duration: 1.5,
+            y: 100,
+            opacity: 0,
+            ease: "back.out(1.7)",
+        }, "-=1")
+        .from(".nav-btn", {
+            duration: 0.8,
+            scale: 0,
+            y: 50,
+            opacity: 0,
+            stagger: 0.2,
+            ease: "back.out(1.7)",
+        }, "-=1");
+
+        // Create floating color splashes
+        function createColorSplash() {
+            const splash = document.createElement('div');
+            splash.className = 'color-splash';
+            splash.style.left = Math.random() * window.innerWidth + 'px';
+            splash.style.top = Math.random() * window.innerHeight + 'px';
+            document.querySelector('.floating-elements').appendChild(splash);
+
+            const colors = ['#FF0000', '#FF4500', '#FF8C00', '#FFD700', '#FF1493', '#FF69B4', '#FF00FF'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+            gsap.set(splash, {
+                backgroundColor: randomColor,
+                scale: 0,
+                opacity: 0
+            });
+
+            gsap.to(splash, {
+                duration: 2,
+                scale: 2,
+                opacity: 0.6,
+                ease: "power1.out",
+                onComplete: () => {
+                    gsap.to(splash, {
+                        duration: 1,
+                        opacity: 0,
+                        scale: 3,
+                        onComplete: () => splash.remove()
+                    });
+                }
+            });
+        }
+
+        // Create floating festival elements
+        function createFloatingElements() {
+            setInterval(createColorSplash, 2000);
+            
+            const festivalIcons = ['🎨', '✨', '🎉', '🌈', '💖', '🎊', '🌺'];
+            const container = document.querySelector('.festival-elements');
+
+            festivalIcons.forEach((icon, index) => {
+                const iconElement = document.createElement('div');
+                iconElement.className = 'festival-icon';
+                iconElement.textContent = icon;
+                iconElement.style.left = Math.random() * 80 + 10 + '%';
+                iconElement.style.top = Math.random() * 80 + 10 + '%';
+                container.appendChild(iconElement);
+
+                gsap.to(iconElement, {
+                    duration: 2,
+                    opacity: 1,
+                    scale: 1.5,
+                    y: -100,
+                    ease: "power1.inOut",
+                    repeat: -1,
+                    delay: index * 0.3,
+                    yoyo: true
+                });
+            });
+        }
+
+        // Animated text reveals
+        const splashTexts = [
+            "Let's Celebrate!",
+            "Spread Joy!",
+            "Feel the Colors!",
+            "Happy Holi!"
+        ];
+
+        function createSplashText() {
+            const text = document.createElement('div');
+            text.className = 'splash-text';
+            text.textContent = splashTexts[Math.floor(Math.random() * splashTexts.length)];
+            text.style.left = Math.random() * 60 + 20 + '%';
+            text.style.top = Math.random() * 60 + 20 + '%';
+            document.body.appendChild(text);
+
+            gsap.to(text, {
+                duration: 1,
+                opacity: 1,
+                scale: 1.2,
+                ease: "back.out(1.7)",
+                onComplete: () => {
+                    gsap.to(text, {
+                        duration: 0.5,
+                        opacity: 0,
+                        scale: 0.8,
+                        delay: 1,
+                        onComplete: () => text.remove()
+                    });
+                }
+            });
+        }
+
+        setInterval(createSplashText, 3000);
+
+        // Enhanced button hover animations
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                gsap.to(btn, {
+                    duration: 0.3,
+                    scale: 1.1,
+                    backgroundColor: 'rgba(255,255,255,0.4)',
+                    ease: "power2.out"
+                });
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                gsap.to(btn, {
+                    duration: 0.3,
+                    scale: 1,
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                    ease: "power2.in"
+                });
+            });
+        });
+
+        // Enhanced background switching animation
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const backgrounds = document.querySelectorAll('.background');
+
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const bgNumber = btn.getAttribute('data-bg');
+                
+                navBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                gsap.to(backgrounds, {
+                    duration: 0.8,
+                    opacity: 0,
+                    scale: 0.95,
+                    stagger: 0.1,
+                    ease: "power2.inOut"
+                });
+                
+                gsap.to(`.bg${bgNumber}`, {
+                    duration: 0.8,
+                    opacity: 1,
+                    scale: 1,
+                    ease: "power2.inOut"
+                });
+
+                // Create burst effect on background change
+                createColorSplash();
+                createSplashText();
+            });
+        });
+
+        // Previous particle system code remains the same
+    </script>
+</body>
+</html>
